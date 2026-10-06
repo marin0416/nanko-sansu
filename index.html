@@ -1,0 +1,741 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#fff4dc">
+<title>なんこかな？ さんすう</title>
+<style>
+:root{--ink:#4a3a40;--pink:#e2557d;--orange:#f08a4b;--green:#5bb56a;--blue:#4a9fe0;--card:#fff;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{font-family:"Hiragino Maru Gothic ProN","Hiragino Sans","Yu Gothic",sans-serif;color:var(--ink);background:linear-gradient(#fff4dc,#ffe9ef 60%,#e6f6e4);overflow-x:hidden;user-select:none;-webkit-user-select:none}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+.screen{min-height:100dvh;display:flex;flex-direction:column;align-items:center;padding:10px 14px calc(14px + env(safe-area-inset-bottom))}
+.bunny{display:block;overflow:visible;aspect-ratio:120/130;height:auto;filter:drop-shadow(0 4px 4px rgba(170,110,40,.2))}
+.bunny *{transform-box:fill-box}
+.lion-ear{transform-origin:50% 90%;animation:earWiggle 3.4s ease-in-out infinite}
+.lion-ear.r{animation-delay:.5s}
+.lion-eyes{transform-origin:50% 50%;animation:blink 4.2s infinite}
+.lion-tail{transform-origin:0% 100%;animation:swish 1.8s ease-in-out infinite}
+.lion-head{transform-origin:50% 85%;animation:tilt 5s ease-in-out infinite}
+@keyframes earWiggle{0%,78%,100%{transform:rotate(0)}85%{transform:rotate(-10deg)}92%{transform:rotate(6deg)}}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+@keyframes swish{0%,100%{transform:rotate(0)}50%{transform:rotate(-14deg)}}
+@keyframes tilt{0%,100%{transform:rotate(0)}30%{transform:rotate(-4deg)}60%{transform:rotate(3deg)}}
+.bunny.hop{animation:hop .55s cubic-bezier(.3,1.6,.5,1)}
+.bunny.party{animation:party .7s ease-in-out infinite}
+@keyframes hop{40%{transform:translateY(-18px) rotate(-6deg)}}
+@keyframes party{25%{transform:translateY(-14px) rotate(-8deg)}75%{transform:translateY(-14px) rotate(8deg)}}
+
+h1{text-align:center;font-size:clamp(30px,9vw,42px);line-height:1.25;margin:18px 0 6px}
+h1 .o{color:var(--orange)}
+.sub{text-align:center;margin:0 0 10px;font-size:16px;opacity:.8}
+.big-btn{background:var(--orange);color:#fff;font-size:26px;font-weight:bold;padding:14px 40px;border-radius:999px;box-shadow:0 6px 0 #c9662e;margin-top:14px}
+.big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #c9662e}
+.chip{white-space:nowrap;flex:none;background:#fff;padding:8px 14px;border-radius:999px;font-size:15px;font-weight:bold;box-shadow:0 3px 0 #0000001a}
+
+/* setup */
+.setup-lion{width:min(150px,40vw);margin:6px auto}
+.field{width:min(360px,92vw);background:#fff;border-radius:22px;padding:16px;box-shadow:0 5px 0 #0000000f;margin-top:6px}
+.field label{display:block;font-weight:bold;margin-bottom:8px}
+.field input{width:100%;font:inherit;font-size:26px;padding:10px 14px;border-radius:14px;border:3px solid #f3d9c9;outline:none;text-align:center}
+.field input:focus{border-color:var(--orange)}
+.suffix{display:flex;gap:8px;margin-top:12px}
+.suffix button{flex:1;padding:10px 0;border-radius:14px;background:#fff6ef;font-size:20px;font-weight:bold;border:3px solid transparent}
+.suffix button[aria-pressed="true"]{border-color:var(--orange);background:#fff}
+.preview{text-align:center;margin-top:10px;font-size:18px}
+.preview b{color:var(--pink)}
+
+/* home */
+.home-top{width:100%;max-width:520px;display:flex;justify-content:space-between;align-items:center}
+.home-hello{display:flex;align-items:center;gap:10px;width:100%;max-width:520px;margin:10px 0}
+.home-hello .bunny{width:96px;flex:none}
+.bubble{background:#fff;border-radius:20px;padding:12px 16px;font-size:18px;font-weight:bold;line-height:1.5;box-shadow:0 4px 0 #0000000f;position:relative}
+.bubble b{color:var(--pink)}
+.levels{display:grid;gap:10px;width:100%;max-width:520px}
+.lv{display:flex;align-items:center;gap:12px;background:#fff;border-radius:20px;padding:12px 14px;text-align:left;box-shadow:0 5px 0 #0000000f}
+.lv:active{transform:translateY(3px)}
+.lv .num{flex:none;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;color:#fff;font-size:26px;font-weight:bold}
+.lv .t{flex:1}
+.lv .t b{display:block;font-size:20px}
+.lv .t span{font-size:13px;opacity:.75}
+.lv .st{flex:none;font-size:15px;font-weight:bold;text-align:right;min-width:62px}
+.lv .st .done{color:var(--pink);font-size:22px}
+.bar{height:8px;background:#f2ebe6;border-radius:9px;margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green);border-radius:9px;transition:width .4s}
+.total{margin-top:12px;font-weight:bold;font-size:17px}
+.total b{color:var(--orange);font-size:22px}
+.medals{margin-top:4px;font-size:15px}
+
+/* play */
+.play-top{width:100%;max-width:560px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.dots{display:flex;gap:4px;justify-content:center;flex:1;min-width:0}
+.dots i{flex:none;width:11px;height:11px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 2px #f1d7c8}
+.dots i.ok{background:var(--green);box-shadow:none}
+.dots i.now{box-shadow:inset 0 0 0 3px var(--orange)}
+.q-row{display:flex;align-items:flex-start;gap:6px;width:100%;max-width:560px;margin:6px 0 4px}
+.q-row .bunny{width:58px;flex:none;margin-top:4px}
+.q-row .bubble{flex:1;font-size:clamp(16px,4.5vw,21px);padding:10px 14px;line-height:1.45}
+.q-row .bubble .n{color:var(--blue);font-size:1.25em}
+.q-row .bubble .ask{color:var(--orange);display:block;margin-top:4px}
+.say{flex:none;width:58px;padding:6px 0 5px;border-radius:16px;background:#fff;font-size:22px;line-height:1;box-shadow:0 3px 0 #0000001a;margin-top:4px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.say small{font-size:10px;font-weight:bold;letter-spacing:-.5px}
+.answers.locked button{opacity:.4;pointer-events:none}
+.msg.listen{color:var(--ink);opacity:.6}
+.scene{width:100%;max-width:560px;min-height:120px;background:#fffdf8;border-radius:24px;box-shadow:0 5px 0 #0000000f;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;padding:10px 8px 18px;position:relative}
+.grp{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;max-width:230px;padding:8px;border-radius:18px;background:#fff3e6}
+.grp.b{background:#e9f5ff}
+.plus{font-size:40px;font-weight:bold;color:var(--orange)}
+.it{position:relative;line-height:1;cursor:pointer;transition:transform .2s,opacity .5s,filter .5s}
+.it.pop{animation:pop .45s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes pop{from{transform:scale(0)}}
+.em{display:block}
+.em svg{display:block;width:1.1em;height:1.15em}
+.it.wait{visibility:hidden}
+.it .badge{position:absolute;right:-4px;top:-6px;background:var(--pink);color:#fff;font-size:13px;font-weight:bold;min-width:22px;height:22px;border-radius:11px;display:grid;place-items:center;font-family:sans-serif}
+.it.gone{transform:scale(.88)}
+.it.gone .em{opacity:.3;filter:grayscale(1)}
+.it.gone::after{content:"✕";position:absolute;inset:0;display:grid;place-items:center;color:#e0413a;font-weight:bold;font-size:.9em}
+.hint{position:absolute;bottom:6px;right:12px;font-size:12px;opacity:.6}
+.formula{height:36px;font-size:28px;font-weight:bold;margin:4px 0 2px;letter-spacing:2px}
+.formula .ans{color:var(--pink)}
+.answers{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:100%;max-width:520px}
+.answers button{aspect-ratio:6/5;border-radius:20px;background:#fff;font-size:clamp(28px,8vw,40px);font-weight:bold;box-shadow:0 5px 0 #e9d6cb;font-family:"Arial Rounded MT Bold","Hiragino Maru Gothic ProN",sans-serif}
+.answers button:active{transform:translateY(3px);box-shadow:0 2px 0 #e9d6cb}
+.answers button.right{background:var(--green);color:#fff;box-shadow:0 5px 0 #3e8a4b}
+.answers button.wrong{animation:shake .4s;background:#ffe3e3}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.next{margin-top:4px;padding:10px 40px}
+.msg{min-height:26px;font-size:19px;font-weight:bold;margin-top:4px;text-align:center}
+.msg.good{color:var(--green)}
+.msg.try{color:var(--orange)}
+
+/* overlay */
+.overlay{position:fixed;inset:0;background:rgba(255,248,236,.94);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20;padding:20px;text-align:center}
+.overlay .bunny{width:min(170px,44vw)}
+.overlay h2{font-size:clamp(28px,8vw,40px);margin:10px 0 4px;color:var(--pink)}
+.overlay p{font-size:20px;font-weight:bold;margin:4px 0}
+.stars{font-size:56px;color:#ffc531;text-shadow:0 3px 0 #e8a400}
+.medal{font-size:90px;animation:hop 1s infinite}
+canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:30}
+.credit{font-size:11px;opacity:.55;margin-top:auto;padding-top:14px;text-align:center}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<section class="screen" id="setup" hidden>
+  <h1>なんこかな？<br><span class="o">さんすう</span></h1>
+  <p class="sub">ライオンくんと たしざん・ひきざん</p>
+  <svg class="bunny setup-lion" viewBox="0 0 120 130">  <g class="lion-tail"><path d="M82 108 C98 112 106 100 106 88" fill="none" stroke="#efb867" stroke-width="7" stroke-linecap="round"/><path d="M106 89 c-6 -3 -5 -13 1 -14 c3 5 8 3 7 10 c-1 5 -5 7 -8 4z" fill="#b8733a"/></g>
+  <ellipse cx="60" cy="103" rx="27" ry="21" fill="#f2c27a"/>
+  <path d="M50 88 Q60 84 70 88 Q72 100 60 104 Q48 100 50 88Z" fill="#fff0d6"/>
+  <ellipse cx="49" cy="119" rx="8" ry="6" fill="#f6cd8c"/><ellipse cx="71" cy="119" rx="8" ry="6" fill="#f6cd8c"/>
+  <g><ellipse cx="33" cy="118" rx="12" ry="10" fill="#f6cd8c"/><ellipse cx="33" cy="120" rx="5.5" ry="4.3" fill="#f7a1a8"/><circle cx="27.5" cy="113.8" r="2.2" fill="#f7a1a8"/><circle cx="33" cy="112.2" r="2.2" fill="#f7a1a8"/><circle cx="38.5" cy="113.8" r="2.2" fill="#f7a1a8"/></g>
+  <g><ellipse cx="87" cy="118" rx="12" ry="10" fill="#f6cd8c"/><ellipse cx="87" cy="120" rx="5.5" ry="4.3" fill="#f7a1a8"/><circle cx="81.5" cy="113.8" r="2.2" fill="#f7a1a8"/><circle cx="87" cy="112.2" r="2.2" fill="#f7a1a8"/><circle cx="92.5" cy="113.8" r="2.2" fill="#f7a1a8"/></g>
+  <g class="lion-head">
+    <g class="lion-ear l"><circle cx="26" cy="30" r="13.5" fill="#efb867"/><circle cx="26.5" cy="31" r="8" fill="#ffc0c4"/></g>
+    <g class="lion-ear r"><circle cx="94" cy="30" r="13.5" fill="#efb867"/><circle cx="93.5" cy="31" r="8" fill="#ffc0c4"/></g>
+    <ellipse cx="60" cy="54" rx="39" ry="35" fill="#f4c47c"/>
+    <path d="M44 25 c-1 -9 7 -12 11 -6 c1 -9 12 -10 13 -1 c5 -6 13 -1 9 6 c-5 -3 -11 -4 -16 -3 c-6 -1 -12 1 -17 4z" fill="#e6a85a"/>
+    <path d="M52 19 q2 -6 7 -4 M63 17 q4 -5 8 -1" fill="none" stroke="#d8964a" stroke-width="1.6" stroke-linecap="round"/>
+    <ellipse cx="60" cy="73" rx="15" ry="10" fill="#fff0d6"/>
+    <ellipse cx="34" cy="70" rx="8" ry="5" fill="#ff9fae" opacity=".55"/><ellipse cx="86" cy="70" rx="8" ry="5" fill="#ff9fae" opacity=".55"/>
+    <g class="lion-eyes">
+      <ellipse cx="44" cy="58" rx="7.6" ry="8.6" fill="#3d2a24"/><ellipse cx="44" cy="61.5" rx="5" ry="3.6" fill="#8cc06a" opacity=".9"/><circle cx="46.4" cy="54.6" r="3" fill="#fff"/><circle cx="41.6" cy="61.6" r="1.4" fill="#fff"/>
+      <ellipse cx="76" cy="58" rx="7.6" ry="8.6" fill="#3d2a24"/><ellipse cx="76" cy="61.5" rx="5" ry="3.6" fill="#8cc06a" opacity=".9"/><circle cx="78.4" cy="54.6" r="3" fill="#fff"/><circle cx="73.6" cy="61.6" r="1.4" fill="#fff"/>
+    </g>
+    <path d="M60 71 c-1.6 -2.4 -5.4 -1.4 -4.4 1.2 c0.8 1.8 4.4 3.6 4.4 3.6 s3.6 -1.8 4.4 -3.6 c1 -2.6 -2.8 -3.6 -4.4 -1.2z" fill="#f2808f"/>
+    <path d="M60 75.5 v1.5 M55.5 77 q2.2 3 4.5 0 q2.3 3 4.5 0" fill="none" stroke="#8a5340" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>
+  <div class="field">
+    <label for="nameIn">おなまえ（ひらがな）</label>
+    <input id="nameIn" maxlength="8" placeholder="なまえ" autocomplete="off">
+    <div class="suffix" role="group" aria-label="よびかた">
+      <button type="button" data-s="ちゃん" aria-pressed="true">ちゃん</button>
+      <button type="button" data-s="くん" aria-pressed="false">くん</button>
+      <button type="button" data-s="" aria-pressed="false">なし</button>
+    </div>
+    <div class="preview" id="preview"></div>
+  </div>
+  <button class="big-btn" id="setupGo" type="button">はじめる</button>
+</section>
+
+<!-- HOME -->
+<section class="screen" id="home" hidden>
+  <div class="home-top">
+    <button class="chip" id="renameBtn" type="button">なまえ</button>
+    <span style="display:flex;gap:6px"><button class="chip" id="musicBtn" type="button">♪ おんがく</button><button class="chip" id="voiceBtn" type="button">こえ：あり</button></span>
+  </div>
+  <div class="home-hello">
+    <svg class="bunny" id="homeLion" viewBox="0 0 120 130">  <g class="lion-tail"><path d="M82 108 C98 112 106 100 106 88" fill="none" stroke="#efb867" stroke-width="7" stroke-linecap="round"/><path d="M106 89 c-6 -3 -5 -13 1 -14 c3 5 8 3 7 10 c-1 5 -5 7 -8 4z" fill="#b8733a"/></g>
+  <ellipse cx="60" cy="103" rx="27" ry="21" fill="#f2c27a"/>
+  <path d="M50 88 Q60 84 70 88 Q72 100 60 104 Q48 100 50 88Z" fill="#fff0d6"/>
+  <ellipse cx="49" cy="119" rx="8" ry="6" fill="#f6cd8c"/><ellipse cx="71" cy="119" rx="8" ry="6" fill="#f6cd8c"/>
+  <g><ellipse cx="33" cy="118" rx="12" ry="10" fill="#f6cd8c"/><ellipse cx="33" cy="120" rx="5.5" ry="4.3" fill="#f7a1a8"/><circle cx="27.5" cy="113.8" r="2.2" fill="#f7a1a8"/><circle cx="33" cy="112.2" r="2.2" fill="#f7a1a8"/><circle cx="38.5" cy="113.8" r="2.2" fill="#f7a1a8"/></g>
+  <g><ellipse cx="87" cy="118" rx="12" ry="10" fill="#f6cd8c"/><ellipse cx="87" cy="120" rx="5.5" ry="4.3" fill="#f7a1a8"/><circle cx="81.5" cy="113.8" r="2.2" fill="#f7a1a8"/><circle cx="87" cy="112.2" r="2.2" fill="#f7a1a8"/><circle cx="92.5" cy="113.8" r="2.2" fill="#f7a1a8"/></g>
+  <g class="lion-head">
+    <g class="lion-ear l"><circle cx="26" cy="30" r="13.5" fill="#efb867"/><circle cx="26.5" cy="31" r="8" fill="#ffc0c4"/></g>
+    <g class="lion-ear r"><circle cx="94" cy="30" r="13.5" fill="#efb867"/><circle cx="93.5" cy="31" r="8" fill="#ffc0c4"/></g>
+    <ellipse cx="60" cy="54" rx="39" ry="35" fill="#f4c47c"/>
+    <path d="M44 25 c-1 -9 7 -12 11 -6 c1 -9 12 -10 13 -1 c5 -6 13 -1 9 6 c-5 -3 -11 -4 -16 -3 c-6 -1 -12 1 -17 4z" fill="#e6a85a"/>
+    <path d="M52 19 q2 -6 7 -4 M63 17 q4 -5 8 -1" fill="none" stroke="#d8964a" stroke-width="1.6" stroke-linecap="round"/>
+    <ellipse cx="60" cy="73" rx="15" ry="10" fill="#fff0d6"/>
+    <ellipse cx="34" cy="70" rx="8" ry="5" fill="#ff9fae" opacity=".55"/><ellipse cx="86" cy="70" rx="8" ry="5" fill="#ff9fae" opacity=".55"/>
+    <g class="lion-eyes">
+      <ellipse cx="44" cy="58" rx="7.6" ry="8.6" fill="#3d2a24"/><ellipse cx="44" cy="61.5" rx="5" ry="3.6" fill="#8cc06a" opacity=".9"/><circle cx="46.4" cy="54.6" r="3" fill="#fff"/><circle cx="41.6" cy="61.6" r="1.4" fill="#fff"/>
+      <ellipse cx="76" cy="58" rx="7.6" ry="8.6" fill="#3d2a24"/><ellipse cx="76" cy="61.5" rx="5" ry="3.6" fill="#8cc06a" opacity=".9"/><circle cx="78.4" cy="54.6" r="3" fill="#fff"/><circle cx="73.6" cy="61.6" r="1.4" fill="#fff"/>
+    </g>
+    <path d="M60 71 c-1.6 -2.4 -5.4 -1.4 -4.4 1.2 c0.8 1.8 4.4 3.6 4.4 3.6 s3.6 -1.8 4.4 -3.6 c1 -2.6 -2.8 -3.6 -4.4 -1.2z" fill="#f2808f"/>
+    <path d="M60 75.5 v1.5 M55.5 77 q2.2 3 4.5 0 q2.3 3 4.5 0" fill="none" stroke="#8a5340" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>
+    <div class="bubble" id="homeMsg"></div>
+  </div>
+  <div class="levels" id="levels"></div>
+  <div class="total" id="total"></div>
+  <div class="medals" id="medals"></div>
+  <div class="credit">ゲームは ブラウザだけで うごきます。きろくは このスマホの なかだけに のこります。</div>
+</section>
+
+<!-- PLAY -->
+<section class="screen" id="play" hidden>
+  <div class="play-top">
+    <button class="chip" id="backBtn" type="button">もどる</button>
+    <div class="dots" id="dots"></div>
+    <span class="chip" id="lvName"></span>
+  </div>
+  <div class="q-row">
+    <svg class="bunny" id="playLion" viewBox="0 0 120 130">  <g class="lion-tail"><path d="M82 108 C98 112 106 100 106 88" fill="none" stroke="#efb867" stroke-width="7" stroke-linecap="round"/><path d="M106 89 c-6 -3 -5 -13 1 -14 c3 5 8 3 7 10 c-1 5 -5 7 -8 4z" fill="#b8733a"/></g>
+  <ellipse cx="60" cy="103" rx="27" ry="21" fill="#f2c27a"/>
+  <path d="M50 88 Q60 84 70 88 Q72 100 60 104 Q48 100 50 88Z" fill="#fff0d6"/>
+  <ellipse cx="49" cy="119" rx="8" ry="6" fill="#f6cd8c"/><ellipse cx="71" cy="119" rx="8" ry="6" fill="#f6cd8c"/>
+  <g><ellipse cx="33" cy="118" rx="12" ry="10" fill="#f6cd8c"/><ellipse cx="33" cy="120" rx="5.5" ry="4.3" fill="#f7a1a8"/><circle cx="27.5" cy="113.8" r="2.2" fill="#f7a1a8"/><circle cx="33" cy="112.2" r="2.2" fill="#f7a1a8"/><circle cx="38.5" cy="113.8" r="2.2" fill="#f7a1a8"/></g>
+  <g><ellipse cx="87" cy="118" rx="12" ry="10" fill="#f6cd8c"/><ellipse cx="87" cy="120" rx="5.5" ry="4.3" fill="#f7a1a8"/><circle cx="81.5" cy="113.8" r="2.2" fill="#f7a1a8"/><circle cx="87" cy="112.2" r="2.2" fill="#f7a1a8"/><circle cx="92.5" cy="113.8" r="2.2" fill="#f7a1a8"/></g>
+  <g class="lion-head">
+    <g class="lion-ear l"><circle cx="26" cy="30" r="13.5" fill="#efb867"/><circle cx="26.5" cy="31" r="8" fill="#ffc0c4"/></g>
+    <g class="lion-ear r"><circle cx="94" cy="30" r="13.5" fill="#efb867"/><circle cx="93.5" cy="31" r="8" fill="#ffc0c4"/></g>
+    <ellipse cx="60" cy="54" rx="39" ry="35" fill="#f4c47c"/>
+    <path d="M44 25 c-1 -9 7 -12 11 -6 c1 -9 12 -10 13 -1 c5 -6 13 -1 9 6 c-5 -3 -11 -4 -16 -3 c-6 -1 -12 1 -17 4z" fill="#e6a85a"/>
+    <path d="M52 19 q2 -6 7 -4 M63 17 q4 -5 8 -1" fill="none" stroke="#d8964a" stroke-width="1.6" stroke-linecap="round"/>
+    <ellipse cx="60" cy="73" rx="15" ry="10" fill="#fff0d6"/>
+    <ellipse cx="34" cy="70" rx="8" ry="5" fill="#ff9fae" opacity=".55"/><ellipse cx="86" cy="70" rx="8" ry="5" fill="#ff9fae" opacity=".55"/>
+    <g class="lion-eyes">
+      <ellipse cx="44" cy="58" rx="7.6" ry="8.6" fill="#3d2a24"/><ellipse cx="44" cy="61.5" rx="5" ry="3.6" fill="#8cc06a" opacity=".9"/><circle cx="46.4" cy="54.6" r="3" fill="#fff"/><circle cx="41.6" cy="61.6" r="1.4" fill="#fff"/>
+      <ellipse cx="76" cy="58" rx="7.6" ry="8.6" fill="#3d2a24"/><ellipse cx="76" cy="61.5" rx="5" ry="3.6" fill="#8cc06a" opacity=".9"/><circle cx="78.4" cy="54.6" r="3" fill="#fff"/><circle cx="73.6" cy="61.6" r="1.4" fill="#fff"/>
+    </g>
+    <path d="M60 71 c-1.6 -2.4 -5.4 -1.4 -4.4 1.2 c0.8 1.8 4.4 3.6 4.4 3.6 s3.6 -1.8 4.4 -3.6 c1 -2.6 -2.8 -3.6 -4.4 -1.2z" fill="#f2808f"/>
+    <path d="M60 75.5 v1.5 M55.5 77 q2.2 3 4.5 0 q2.3 3 4.5 0" fill="none" stroke="#8a5340" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>
+    <div class="bubble" id="story"></div>
+    <button class="say" id="sayBtn" type="button" aria-label="もんだいを もういちど きく">🔊<small>もういちど</small></button>
+  </div>
+  <div class="scene" id="scene"></div>
+  <div class="formula" id="formula"></div>
+  <div class="answers" id="answers"></div>
+  <div class="msg" id="msg"></div>
+  <button class="big-btn next" id="nextBtn" type="button" hidden>つぎ ▶</button>
+</section>
+
+<!-- OVERLAY -->
+<div class="overlay" id="over" hidden>
+  <svg class="bunny party" viewBox="0 0 120 130">  <g class="lion-tail"><path d="M82 108 C98 112 106 100 106 88" fill="none" stroke="#efb867" stroke-width="7" stroke-linecap="round"/><path d="M106 89 c-6 -3 -5 -13 1 -14 c3 5 8 3 7 10 c-1 5 -5 7 -8 4z" fill="#b8733a"/></g>
+  <ellipse cx="60" cy="103" rx="27" ry="21" fill="#f2c27a"/>
+  <path d="M50 88 Q60 84 70 88 Q72 100 60 104 Q48 100 50 88Z" fill="#fff0d6"/>
+  <ellipse cx="49" cy="119" rx="8" ry="6" fill="#f6cd8c"/><ellipse cx="71" cy="119" rx="8" ry="6" fill="#f6cd8c"/>
+  <g><ellipse cx="33" cy="118" rx="12" ry="10" fill="#f6cd8c"/><ellipse cx="33" cy="120" rx="5.5" ry="4.3" fill="#f7a1a8"/><circle cx="27.5" cy="113.8" r="2.2" fill="#f7a1a8"/><circle cx="33" cy="112.2" r="2.2" fill="#f7a1a8"/><circle cx="38.5" cy="113.8" r="2.2" fill="#f7a1a8"/></g>
+  <g><ellipse cx="87" cy="118" rx="12" ry="10" fill="#f6cd8c"/><ellipse cx="87" cy="120" rx="5.5" ry="4.3" fill="#f7a1a8"/><circle cx="81.5" cy="113.8" r="2.2" fill="#f7a1a8"/><circle cx="87" cy="112.2" r="2.2" fill="#f7a1a8"/><circle cx="92.5" cy="113.8" r="2.2" fill="#f7a1a8"/></g>
+  <g class="lion-head">
+    <g class="lion-ear l"><circle cx="26" cy="30" r="13.5" fill="#efb867"/><circle cx="26.5" cy="31" r="8" fill="#ffc0c4"/></g>
+    <g class="lion-ear r"><circle cx="94" cy="30" r="13.5" fill="#efb867"/><circle cx="93.5" cy="31" r="8" fill="#ffc0c4"/></g>
+    <ellipse cx="60" cy="54" rx="39" ry="35" fill="#f4c47c"/>
+    <path d="M44 25 c-1 -9 7 -12 11 -6 c1 -9 12 -10 13 -1 c5 -6 13 -1 9 6 c-5 -3 -11 -4 -16 -3 c-6 -1 -12 1 -17 4z" fill="#e6a85a"/>
+    <path d="M52 19 q2 -6 7 -4 M63 17 q4 -5 8 -1" fill="none" stroke="#d8964a" stroke-width="1.6" stroke-linecap="round"/>
+    <ellipse cx="60" cy="73" rx="15" ry="10" fill="#fff0d6"/>
+    <ellipse cx="34" cy="70" rx="8" ry="5" fill="#ff9fae" opacity=".55"/><ellipse cx="86" cy="70" rx="8" ry="5" fill="#ff9fae" opacity=".55"/>
+    <g class="lion-eyes">
+      <ellipse cx="44" cy="58" rx="7.6" ry="8.6" fill="#3d2a24"/><ellipse cx="44" cy="61.5" rx="5" ry="3.6" fill="#8cc06a" opacity=".9"/><circle cx="46.4" cy="54.6" r="3" fill="#fff"/><circle cx="41.6" cy="61.6" r="1.4" fill="#fff"/>
+      <ellipse cx="76" cy="58" rx="7.6" ry="8.6" fill="#3d2a24"/><ellipse cx="76" cy="61.5" rx="5" ry="3.6" fill="#8cc06a" opacity=".9"/><circle cx="78.4" cy="54.6" r="3" fill="#fff"/><circle cx="73.6" cy="61.6" r="1.4" fill="#fff"/>
+    </g>
+    <path d="M60 71 c-1.6 -2.4 -5.4 -1.4 -4.4 1.2 c0.8 1.8 4.4 3.6 4.4 3.6 s3.6 -1.8 4.4 -3.6 c1 -2.6 -2.8 -3.6 -4.4 -1.2z" fill="#f2808f"/>
+    <path d="M60 75.5 v1.5 M55.5 77 q2.2 3 4.5 0 q2.3 3 4.5 0" fill="none" stroke="#8a5340" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>
+  <div id="overBody"></div>
+  <button class="big-btn" id="overBtn" type="button">つぎへ</button>
+</div>
+<canvas id="fx"></canvas>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const KEY = 'sansu-v1';
+const LEVELS = [
+  { name:'たしざん', sub:'こたえが 5まで', color:'#f08a4b', mode:'add', max:5 },
+  { name:'たしざん', sub:'こたえが 10まで', color:'#e2557d', mode:'add', max:10 },
+  { name:'ひきざん', sub:'5までの かずから', color:'#4a9fe0', mode:'sub', max:5 },
+  { name:'ひきざん', sub:'10までの かずから', color:'#5bb56a', mode:'sub', max:10 },
+  { name:'まぜまぜ', sub:'たしざん と ひきざん', color:'#9b6bd6', mode:'mix', max:10 },
+];
+const PER = 10;
+
+/* ---------- save ---------- */
+let S = { name:'', suf:'ちゃん', prog:[0,0,0,0,0], medals:0, voice:true, music:true };
+try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && typeof s === 'object') S = Object.assign(S, s); } catch(e) {}
+if (!Array.isArray(S.prog) || S.prog.length !== 5) S.prog = [0,0,0,0,0];
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} };
+const who = () => S.name + S.suf;
+
+/* ---------- sound ---------- */
+let ac = null, unlocked = false, silentEl = null, master = null, bgmGain = null;
+try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch(e) {}
+function audio() {
+  if (!ac) {
+    try {
+      ac = new (window.AudioContext || window.webkitAudioContext)();
+      const comp = ac.createDynamicsCompressor();
+      comp.threshold.value = -20; comp.knee.value = 12; comp.ratio.value = 4; comp.attack.value = .005; comp.release.value = .2;
+      const post = ac.createGain(); post.gain.value = 1.6;
+      master = ac.createGain(); master.connect(comp); comp.connect(post); post.connect(ac.destination);
+      bgmGain = ac.createGain(); bgmGain.gain.value = S.music ? BGM_VOL : 0; bgmGain.connect(master);
+    } catch(e) { ac = null; }
+  }
+  if (ac && ac.state !== 'running') { try { ac.resume(); } catch(e) {} }
+  unlockIOS();
+  return ac;
+}
+function silentWav() {
+  const n = 4410, buf = new ArrayBuffer(44 + n*2), v = new DataView(buf);
+  const w = (o, s) => [...s].forEach((c,i) => v.setUint8(o+i, c.charCodeAt(0)));
+  w(0,'RIFF'); v.setUint32(4,36+n*2,true); w(8,'WAVE'); w(12,'fmt ');
+  v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true);
+  v.setUint32(24,44100,true); v.setUint32(28,88200,true); v.setUint16(32,2,true); v.setUint16(34,16,true);
+  w(36,'data'); v.setUint32(40,n*2,true);
+  let bin = ''; new Uint8Array(buf).forEach(x => bin += String.fromCharCode(x));
+  return 'data:audio/wav;base64,' + btoa(bin);
+}
+function unlockIOS() {
+  if (unlocked || !ac) return; unlocked = true;
+  try { const bb = ac.createBuffer(1,1,22050), sr = ac.createBufferSource(); sr.buffer = bb; sr.connect(ac.destination); sr.start(0); } catch(e) {}
+  try { silentEl = new Audio(silentWav()); silentEl.loop = true; silentEl.volume = .01; const p = silentEl.play(); if (p && p.catch) p.catch(() => { unlocked = false; }); } catch(e) {}
+}
+['pointerdown','touchend','click'].forEach(ev => addEventListener(ev, () => audio(), { capture:true, passive:true }));
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { if (silentEl) silentEl.pause(); try { speechSynthesis.cancel(); } catch(e) {} }
+  else if (ac) { try { ac.resume(); } catch(e) {} if (silentEl) silentEl.play().catch(() => {}); }
+});
+const mtof = m => 440 * Math.pow(2, (m-69)/12);
+function voiceAt(dest, f, t, dur, type, vol, slide) {
+  const o = ac.createOscillator(), g = ac.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t);
+  if (slide) o.frequency.exponentialRampToValueAtTime(f*slide, t+dur);
+  g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t+.012); g.gain.exponentialRampToValueAtTime(.0001, t+dur);
+  o.connect(g).connect(dest); o.start(t); o.stop(t+dur+.05);
+}
+function tone(f, t0, d, type='triangle', v=.22) { const a = audio(); if (!a) return; voiceAt(master, f, a.currentTime + t0, d, type, v); }
+const sfx = {
+  tap(){ tone(880,0,.12,'sine',.12); },
+  count(k){ tone(mtof(72 + [0,2,4,5,7,9,11,12,14,16][Math.min(k,10)-1]),0,.25,'sine',.22); },
+  right(){ [72,76,79,84].forEach((m,i)=>tone(mtof(m),i*.09,.35,'triangle',.24)); },
+  wrong(){ tone(330,0,.18,'sine',.12); tone(262,.15,.25,'sine',.12); },
+  poof(){ tone(700,0,.18,'sine',.1); tone(500,.06,.2,'sine',.08); },
+  fanfare(){ [72,72,72,76,79,76,79,84].forEach((m,i)=>tone(mtof(m),i*.13,.4,'triangle',.25)); },
+};
+
+/* ---- BGM: tiny step sequencer (やさしい曲 / クリアのお祝い曲) ---- */
+const BGM_VOL = .55, DUCK_VOL = .15, PARTY_VOL = .9;
+const _ = 0;
+const SONGS = {
+  calm: { bpm: 112, beat: 8,
+    mel: [72,_,74,_,76,_,79,_, 76,_,74,_,72,_,_,_, 77,_,76,_,74,_,72,_, 74,_,_,_,79,_,_,_,
+          72,_,74,_,76,_,79,_, 81,_,79,_,76,_,74,_, 77,_,76,_,74,_,71,_, 72,_,_,_,_,_,_,_],
+    chords: [[60,64,67],[60,64,67],[53,57,60],[55,59,62],[60,64,67],[57,60,64],[53,57,60],[60,64,67]] },
+  party: { bpm: 144, beat: 8, party: true,
+    mel: [72,_,72,74,76,_,72,_, 79,_,79,_,76,_,_,_, 77,_,77,79,81,_,77,_, 84,_,83,_,81,_,79,_,
+          76,_,79,_,84,_,79,_, 81,_,79,_,77,_,76,_, 74,_,77,_,81,_,79,77, 76,_,74,_,72,_,_,_],
+    chords: [[60,64,67],[60,64,67],[53,57,60],[55,59,62],[60,64,67],[53,57,60],[55,59,62],[60,64,67]] },
+};
+let song = null, songName = '', step = 0, nextTime = 0, seqTimer = null, noiseBuf = null, speaking = false;
+function playSong(name) {
+  if (songName === name && song) return;
+  songName = name; song = SONGS[name]; step = 0;
+  const a = audio(); if (!a) return;
+  nextTime = a.currentTime + .15; setBgm(curVol());
+  if (!seqTimer) seqTimer = setInterval(schedule, 30);
+}
+function schedule() {
+  if (!ac || !song) return;
+  const spb = 60 / song.bpm / 2;
+  while (nextTime < ac.currentTime + .2) { playStep(song, step, nextTime, spb); nextTime += spb; step++; }
+}
+function bell(f,t,vol,dur){ voiceAt(bgmGain,f,t,dur,'sine',vol); voiceAt(bgmGain,f*2,t,dur*.5,'sine',vol*.25); voiceAt(bgmGain,f*3,t,dur*.3,'sine',vol*.15); }
+function pluck(f,t,vol,dur){ voiceAt(bgmGain,f,t,dur,'triangle',vol); voiceAt(bgmGain,f*2,t,dur*.25,'sine',vol*.3); }
+function noiseHit(t,type,freq,vol,dur){
+  if (!noiseBuf) { noiseBuf = ac.createBuffer(1, ac.sampleRate*.6, ac.sampleRate); const d = noiseBuf.getChannelData(0); for (let j=0;j<d.length;j++) d[j] = Math.random()*2-1; }
+  const nn = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  nn.buffer = noiseBuf; f.type = type; f.frequency.value = freq;
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  nn.connect(f).connect(g).connect(bgmGain); nn.start(t); nn.stop(t+dur+.02);
+}
+function playStep(sg, k, t, spb) {
+  const i = k % sg.mel.length, bar = Math.floor(i/8) % sg.chords.length, inBar = i % 8, ch = sg.chords[bar], m = sg.mel[i];
+  if (sg.party) {
+    if (m) { pluck(mtof(m),t,.15,.5); pluck(mtof(m-4),t,.06,.45); }
+    voiceAt(bgmGain, mtof(ch[0] - (inBar%2 ? 12 : 24)), t, spb*.9, 'triangle', .16);
+    if (inBar%2 === 1) bell(mtof(ch[(inBar>>1)%3]+24), t, .035, .35);
+    if (inBar === 0 || inBar === 4) voiceAt(bgmGain, 160, t, .16, 'sine', .3, .35);
+    if (inBar === 2 || inBar === 6) noiseHit(t,'bandpass',1500,.14,.12);
+    if (inBar%2 === 1) noiseHit(t,'highpass',7000,.035,.05);
+    return;
+  }
+  if (m) bell(mtof(m), t, .13, .9);
+  if (inBar === 0) voiceAt(bgmGain, mtof(ch[0]-12), t, spb*3.5, 'triangle', .17);
+  if (inBar === 4) voiceAt(bgmGain, mtof(ch[2]-12), t, spb*3.5, 'triangle', .12);
+  if (inBar === 2 || inBar === 6) { pluck(mtof(ch[1]),t,.04,.25); pluck(mtof(ch[2]),t,.04,.25); }
+  if (inBar%2 === 1) noiseHit(t,'highpass',6500,.025,.05);
+}
+const curVol = () => speaking ? DUCK_VOL : songName === 'party' ? PARTY_VOL : BGM_VOL;
+function setBgm(v) {
+  if (!bgmGain || !ac) return;
+  bgmGain.gain.cancelScheduledValues(ac.currentTime);
+  bgmGain.gain.setTargetAtTime(S.music ? v : 0, ac.currentTime, .08);
+}
+
+/* ---------- voice ---------- */
+let jaVoice = null, speakTimer = 0, keep = [], sayToken = 0;
+function rankVoice(v) {
+  const nm = (v.name||'') + ' ' + (v.voiceURI||''); let sc = 0;
+  if (/premium|プレミアム/i.test(nm)) sc += 8;
+  if (/enhanced|拡張|neural|natural/i.test(nm)) sc += 6;
+  if (/siri/i.test(nm)) sc += 5;
+  if (/kyoko|o-?ren|hattori/i.test(nm)) sc += 3;
+  if (/google/i.test(nm)) sc += 3;
+  if (/compact|eloquence|grandma|grandpa|rocko|shelley|flo|reed|sandy/i.test(nm)) sc -= 6;
+  if (v.localService) sc += 1;
+  return sc;
+}
+// only use voices that run inside the phone itself (localService), so the child's name is never sent to an online voice service
+function pickVoice() { try { const vs = speechSynthesis.getVoices().filter(v => /^ja/i.test(v.lang) && v.localService); vs.sort((x,y) => rankVoice(y) - rankVoice(x)); jaVoice = vs[0] || null; } catch(e) {} }
+try { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; } catch(e) {}
+// say one text or a list of sentences.
+// onLine(i): sentence i starts (or by timer when voice is off). onDone(): everything has been said.
+function say(parts, onLine, onDone) {
+  if (!Array.isArray(parts)) parts = [parts];
+  const my = ++sayToken;
+  const est = parts.reduce((t,p) => t + 400 + p.length * 140, 0);
+  let doneFired = false;
+  const done = () => { if (!doneFired && my === sayToken) { doneFired = true; if (onDone) onDone(); } };
+  const fallback = () => { let t = 0; parts.forEach((p,i) => { setTimeout(() => { if (my === sayToken && onLine) onLine(i); }, t); t += 400 + p.length * 140; }); setTimeout(done, Math.min(est, 1200)); };
+  if (!jaVoice) pickVoice();
+  if (!S.voice || !('speechSynthesis' in window) || !jaVoice) { fallback(); return; }
+  try {
+    clearTimeout(speakTimer);
+    // always cancel: on iPhone an utterance that has not started yet is not "speaking" but still plays later
+    try { speechSynthesis.cancel(); } catch(e) {}
+    speakTimer = setTimeout(() => {
+      if (my !== sayToken) return;
+      const fired = new Set();
+      keep = parts.map((p,i) => {
+        const u = new SpeechSynthesisUtterance(p);
+        u.lang = 'ja-JP'; u.rate = .92; u.pitch = 1.1; u.volume = 1; if (jaVoice) u.voice = jaVoice;
+        u.onstart = () => { if (my !== sayToken) { try { speechSynthesis.cancel(); } catch(e) {} return; } speaking = true; setBgm(curVol()); if (onLine && !fired.has(i)) { fired.add(i); onLine(i); } };
+        u.onend = u.onerror = () => { if (i === parts.length-1 && my === sayToken) { speaking = false; setBgm(curVol()); done(); } };
+        return u;
+      });
+      try { speechSynthesis.resume(); } catch(e) {}
+      keep.forEach(u => speechSynthesis.speak(u));
+      // safety nets: if the device never reports onstart / onend, keep the game moving
+      if (onLine) { let t = 0; parts.forEach((p,i) => { setTimeout(() => { if (my === sayToken && !fired.has(i)) { fired.add(i); onLine(i); } }, t + 900); t += 400 + p.length * 140; }); }
+      setTimeout(done, est + 2500);
+    }, 150);
+  } catch(e) { fallback(); }
+}
+function hush() { sayToken++; try { speechSynthesis.cancel(); } catch(e) {} speaking = false; setBgm(curVol()); }
+const NUMSAY = ['','いち','に','さん','よん','ご','ろく','なな','はち','きゅう','じゅう'];
+
+/* ---------- problems ---------- */
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+const ACORN = '<svg viewBox="0 0 40 50" aria-label="どんぐり"><path d="M20 3 q3 1 2 7" fill="none" stroke="#6b4423" stroke-width="3" stroke-linecap="round"/><path d="M8.5 20 C8.5 33 14 44 20 47 C26 44 31.5 33 31.5 20 Z" fill="#c98a4b"/><path d="M13 23 C13 32 16 39 19 42" fill="none" stroke="#e7b37c" stroke-width="3" stroke-linecap="round" opacity=".8"/><path d="M5 20 C5 10 35 10 35 20 C35 23.5 5 23.5 5 20 Z" fill="#7b4f2c"/><g fill="#5e3a1f"><circle cx="12" cy="15" r="1.4"/><circle cx="18" cy="13" r="1.4"/><circle cx="24" cy="13" r="1.4"/><circle cx="30" cy="16" r="1.4"/><circle cx="15" cy="19" r="1.4"/><circle cx="21" cy="18" r="1.4"/><circle cx="27" cy="19" r="1.4"/><circle cx="9" cy="19" r="1.2"/></g></svg>';
+const HAMEGG = '<svg viewBox="0 0 54 42" aria-label="ハムエッグ"><ellipse cx="27" cy="23" rx="25" ry="17" fill="#e98a92"/><ellipse cx="27" cy="23" rx="21" ry="13.5" fill="#f6b7bc"/><path d="M27 23 m-14 0 a14 10 0 1 0 28 0" fill="none" stroke="#fbd3d6" stroke-width="2" opacity=".7"/><path d="M12 22 C10 13 20 8 27 10 C35 6 46 12 43 21 C46 29 37 34 29 32 C21 36 9 31 12 22 Z" fill="#fff"/><circle cx="28" cy="21" r="7.5" fill="#ffb51f"/><circle cx="25.5" cy="18.5" r="2.4" fill="#ffe08a"/></svg>';
+// [ことば, え, かぞえかた(ひらがな), よみあげ用]
+const FOOD  = [['りんご','🍎'],['いちご','🍓'],['みかん','🍊'],['クッキー','🍪'],['あめ','🍬'],['おにぎり','🍙'],['ドーナツ','🍩'],['ハムエッグ',HAMEGG,'まい','枚','やいて くれました']];
+const THING = [['あめ','🍬'],['どんぐり',ACORN],['シール','⭐'],['クッキー','🍪'],['ボール','⚽'],['りんご','🍎']];
+// [どうぶつ, え, いる ばしょ, していること]
+const ANIMAL= [['ねこ','🐱','こうえん','ひなたぼっこ していました'],['いぬ','🐶','こうえん','しっぽを ふっていました'],['うさぎ','🐰','はらっぱ','ぴょんぴょん はねていました'],['かえる','🐸','いけ','けろけろ うたっていました'],['ひよこ','🐤','にわ','ぴよぴよ ないていました'],['くま','🐻','もり','てを ふっていました']];
+const it = arr => { const [w,e,c='こ',cs='個',verb=''] = pick(arr); return { w, e, c, cs, verb, q:'なん'+c }; };
+const n = x => `<span class="n">${x}</span>`;
+const N = () => `<b>${who()}</b>`;
+const BIRDIMG = '<svg viewBox="0 0 56 48" aria-label="ことり"><path d="M10 26 L1 20 L3 31 Z" fill="#3f8fd6"/><ellipse cx="27" cy="27" rx="18" ry="15" fill="#5aaef0"/><path d="M15 30 C17 41 34 43 39 34 C33 37 22 37 15 30 Z" fill="#eaf6ff"/><path d="M18 24 C24 21 30 25 31 31 C25 33 19 30 18 24 Z" fill="#3f8fd6"/><circle cx="38" cy="17" r="11" fill="#5aaef0"/><circle cx="41" cy="15" r="2.6" fill="#2b2b3a"/><circle cx="42" cy="14" r=".9" fill="#fff"/><ellipse cx="39" cy="20.5" rx="2.6" ry="1.6" fill="#ff9fb2" opacity=".8"/><path d="M48 16 L55 18.5 L48 21 Z" fill="#ffb02e"/><path d="M24 41 v5 M30 41 v5" stroke="#ffb02e" stroke-width="2" stroke-linecap="round"/></svg>';
+const ANI = { c:'ひき', cs:'匹', q:'なんびき' }, BIRD = { e:BIRDIMG, c:'わ', cs:'羽', q:'なんわ' };
+
+const ADD = [
+  () => { const I = it(FOOD);  return { ...I, t:(a,b)=>[`${N()}の いえに ${I.w}が ${n(a)}${I.c} あります。`, `おばあちゃんが ${I.w}を ${n(b)}${I.c} ${I.verb || 'くれました'}。`, `あわせて ${I.q}？`] }; },
+  () => { const I = it(THING); return { ...I, t:(a,b)=>[`${N()}は ${I.w}を ${n(a)}${I.c} もっています。`, `ママが ${n(b)}${I.c} くれました。`, `ぜんぶで ${I.q}？`] }; },
+  () => { const I = it(FOOD);  return { ...I, t:(a,b)=>[`${N()}の おさらに ${I.w}が ${n(a)}${I.c} あります。`, `パパが ${n(b)}${I.c} ${I.verb || 'のせて くれました'}。`, `ぜんぶで ${I.q}？`] }; },
+  () => { const [w,e,pl,act] = pick(ANIMAL); return { e, ...ANI, t:(a,b)=>[`${N()}が ${pl}に いくと、${w}さんが ${n(a)}ひき ${act}。`, `${n(b)}ひき あそびに きました。`, 'みんなで なんびき？'] }; },
+  () => ({ ...BIRD, t:(a,b)=>[`${N()}の いえの きに、ことりが ${n(a)}わ います。`, `${n(b)}わ とんで きました。`, 'ぜんぶで なんわ？'] }),
+  () => { const I = it(THING); return { ...I, t:(a,b)=>[`${N()}は ${I.w}を ${n(a)}${I.c} もっています。`, `おともだちが ${n(b)}${I.c} くれました。`, `あわせて ${I.q}？`] }; },
+];
+const SUB = [
+  () => ({ e:'🍓', c:'こ', cs:'個', q:'なんこ', cake:true, t:(a,b)=>[`ケーキに いちごが ${n(a)}こ のっていました。`, `${N()}が ${n(b)}こ たべました。`, 'のこりは なんこ？'] }),
+  () => { const I = it(FOOD);  return { ...I, t:(a,b)=>[`おさらに ${I.w}が ${n(a)}${I.c} ありました。`, `${N()}が ${n(b)}${I.c} たべました。`, `のこりは ${I.q}？`] }; },
+  () => { const I = it(THING); return { ...I, t:(a,b)=>[`${N()}は ${I.w}を ${n(a)}${I.c} もっていました。`, `パパに ${n(b)}${I.c} あげました。`, `のこりは ${I.q}？`] }; },
+  () => ({ e:'🐟', ...ANI, t:(a,b)=>[`${N()}が いけを みると、さかなが ${n(a)}ひき いました。`, `${n(b)}ひき およいで いきました。`, 'のこりは なんびき？'] }),
+  () => ({ ...BIRD, t:(a,b)=>[`${N()}の いえの きに、ことりが ${n(a)}わ いました。`, `${n(b)}わ とんで いきました。`, 'のこりは なんわ？'] }),
+  () => ({ e:'🎈', c:'こ', cs:'個', q:'なんこ', t:(a,b)=>[`${N()}は ふうせんを ${n(a)}こ もっていました。`, `${n(b)}こ とんで いっちゃった。`, 'のこりは なんこ？'] }),
+  () => { const [w,e,pl,act] = pick(ANIMAL); return { e, ...ANI, t:(a,b)=>[`${pl}で ${w}さんが ${n(a)}ひき ${act}。`, `${n(b)}ひき おうちに かえりました。`, 'のこりは なんびき？'] }; },
+];
+// keep each set of 10 fresh: no repeated numbers in the set, no same story or same picture twice in a row
+let round = { lv:-1, nums:new Set(), lastTpl:'', lastE:'' };
+function resetRound(lv) { round = { lv, nums:new Set(), lastTpl:'', lastE:'' }; }
+function makeProblem(lv) {
+  const L = LEVELS[lv];
+  if (round.lv !== lv || S.prog[lv] === 0 && round.nums.size >= PER) resetRound(lv);
+  let best = null;
+  for (let tryN = 0; tryN < 300; tryN++) {
+    const mode = L.mode === 'mix' ? (Math.random() < .5 ? 'add' : 'sub') : L.mode;
+    let a, b, ans;
+    if (mode === 'add') {
+      ans = L.max === 5 ? rnd(2,5) : rnd(lv === 1 ? 5 : 3, 10);
+      a = rnd(1, ans-1); b = ans - a;
+    } else {
+      a = L.max === 5 ? rnd(2,5) : rnd(lv === 3 ? 6 : 3, 10);
+      b = rnd(1, a-1); ans = a - b;
+    }
+    const list = mode === 'add' ? ADD : SUB, ti = Math.floor(Math.random()*list.length);
+    const tpl = list[ti](), tKey = mode + ti, nKey = mode + a + '-' + b;
+    const okNum = !round.nums.has(nKey) || tryN > 200;   // relax only if every pair is used up
+    const okTpl = tKey !== round.lastTpl, okPic = tpl.e !== round.lastE;
+    if (okNum && okTpl && okPic) { best = { mode, a, b, ans, ...tpl, lines: tpl.t(a,b), nKey, tKey }; break; }
+  }
+  if (!best) { // practically never: fall back to anything valid
+    const a = 2, b = 1; const tpl = ADD[0](); best = { mode:'add', a, b, ans:3, ...tpl, lines: tpl.t(a,b), nKey:'add2-1', tKey:'add0' };
+  }
+  round.nums.add(best.nKey); round.lastTpl = best.tKey; round.lastE = best.e;
+  if (round.nums.size > PER) round.nums = new Set([best.nKey]);
+  return best;
+}
+
+/* ---------- screens ---------- */
+const screens = ['setup','home','play'];
+function show(id) { screens.forEach(s => $(s).hidden = s !== id); window.scrollTo(0,0); }
+const LION = document.querySelector('#homeLion').innerHTML;
+function hop(el) { el.classList.remove('hop'); void el.getBoundingClientRect(); el.classList.add('hop'); }
+
+/* setup */
+function openSetup() {
+  $('nameIn').value = S.name;
+  document.querySelectorAll('.suffix button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.s === S.suf)));
+  updPreview(); show('setup');
+}
+function curSuf() { const b = document.querySelector('.suffix button[aria-pressed="true"]'); return b ? b.dataset.s : 'ちゃん'; }
+function updPreview() {
+  const v = $('nameIn').value.trim();
+  $('preview').innerHTML = v ? `もんだいに <b>${esc(v + curSuf())}</b> が でてくるよ` : 'なまえを いれてね';
+}
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+$('nameIn').addEventListener('input', updPreview);
+document.querySelectorAll('.suffix button').forEach(b => b.addEventListener('click', () => {
+  document.querySelectorAll('.suffix button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); updPreview(); sfx.tap();
+}));
+$('setupGo').addEventListener('click', () => {
+  audio();
+  const v = $('nameIn').value.trim();
+  if (!v) { $('nameIn').focus(); $('preview').innerHTML = '<b>なまえを いれてね</b>'; return; }
+  S.name = esc(v); S.suf = curSuf(); save(); sfx.right(); playSong('calm'); openHome();
+});
+
+/* home */
+function openHome() {
+  const total = S.prog.reduce((x,y)=>x+y,0);
+  $('homeMsg').innerHTML = total === 0 ? `<b>${who()}</b>、いっしょに<br>さんすう しよう！` : total >= 50 ? `<b>${who()}</b>、ぜんぶ できたね！<br>もういちど やってみる？` : `<b>${who()}</b>、どれに する？`;
+  $('levels').innerHTML = LEVELS.map((L,i) => {
+    const p = S.prog[i], done = p >= PER;
+    return `<button class="lv" type="button" data-lv="${i}"><span class="num" style="background:${L.color}">${i+1}</span><span class="t"><b>${L.name}</b><span>${L.sub}</span><div class="bar"><i style="width:${p*10}%"></i></div></span><span class="st">${done ? '<span class="done">★</span><br>クリア' : p + ' / ' + PER}</span></button>`;
+  }).join('');
+  $('levels').querySelectorAll('.lv').forEach(b => b.addEventListener('click', () => { audio(); sfx.tap(); startLevel(+b.dataset.lv); }));
+  $('total').innerHTML = `ぜんぶで <b>${Math.min(total,50)}</b> / 50もん`;
+  $('medals').textContent = S.medals ? `🏅 ぜんぶクリア ${S.medals}かい` : '';
+  $('voiceBtn').textContent = S.voice ? 'こえ：あり' : 'こえ：なし';
+  $('musicBtn').textContent = S.music ? '♪ おんがく' : '♪ なし';
+  if (ac) playSong('calm');
+  show('home');
+}
+$('renameBtn').addEventListener('click', () => { sfx.tap(); openSetup(); });
+$('voiceBtn').addEventListener('click', () => { S.voice = !S.voice; save(); $('voiceBtn').textContent = S.voice ? 'こえ：あり' : 'こえ：なし'; if (!S.voice) hush(); sfx.tap(); });
+$('homeLion').addEventListener('click', e => hop(e.currentTarget));
+$('musicBtn').addEventListener('click', () => { S.music = !S.music; save(); audio(); $('musicBtn').textContent = S.music ? '♪ おんがく' : '♪ なし'; playSong('calm'); setBgm(curVol()); sfx.tap(); });
+
+/* play */
+let LV = 0, P = null, counted = 0, tries = 0, solved = false;
+function startLevel(lv) {
+  LV = lv;
+  if (S.prog[lv] >= PER) { S.prog[lv] = 0; save(); }
+  resetRound(lv);
+  $('lvName').textContent = `${lv+1} ${LEVELS[lv].name}`;
+  $('lvName').style.background = LEVELS[lv].color; $('lvName').style.color = '#fff';
+  audio(); playSong('calm');
+  show('play'); nextProblem();
+}
+function renderDots() {
+  const p = S.prog[LV];
+  $('dots').innerHTML = Array.from({length:PER}, (_,i) => `<i class="${i < p ? 'ok' : i === p ? 'now' : ''}"></i>`).join('');
+}
+function itemSize(total) { return total <= 5 ? 46 : total <= 8 ? 38 : 32; }
+function nextProblem() {
+  P = makeProblem(LV); counted = 0; tries = 0; solved = false;
+  const my = P;
+  renderDots();
+  $('story').innerHTML = P.lines.map((l,i) => i === 2 ? `<span class="ask">${l}</span>` : l).join('<br>');
+  $('formula').innerHTML = ''; $('msg').textContent = ''; $('msg').className = 'msg';
+  $('nextBtn').hidden = true;
+  const sc = $('scene'), sz = itemSize(P.mode === 'add' ? P.a + P.b : P.a);
+  const items = (k, cls='') => Array.from({length:k}, (_,i) => `<span class="it ${cls}" style="font-size:${sz}px;animation-delay:${i*70}ms"><span class="em">${P.e}</span></span>`).join('');
+  let second = null;
+  $('answers').classList.add('locked');
+  $('msg').textContent = 'よく きいてね'; $('msg').className = 'msg listen';
+  if (P.mode === 'add') {
+    sc.innerHTML = `<div class="grp">${items(P.a,'pop')}</div><span class="plus wait" style="visibility:hidden">＋</span><div class="grp b">${items(P.b,'wait')}</div><span class="hint">さわると かぞえるよ</span>`;
+    // the 2nd group comes in while the 2nd sentence is read
+    second = () => {
+      const plus = sc.querySelector('.plus'); if (plus) plus.style.visibility = '';
+      sc.querySelectorAll('.grp.b .it').forEach((el,i) => { el.style.animationDelay = (i*260) + 'ms'; el.classList.remove('wait'); el.classList.add('pop'); setTimeout(() => sfx.tap(), i*260); });
+    };
+  } else {
+    sc.innerHTML = `<div class="grp" style="max-width:320px">${P.cake ? '<span style="font-size:'+(sz+10)+'px;width:100%;text-align:center">🎂</span>' : ''}${items(P.a,'pop')}</div><span class="hint">さわると かぞえるよ</span>`;
+    const goners = [...sc.querySelectorAll('.it')].slice(P.a - P.b);
+    goners.forEach(el => el.dataset.go = '1');
+    // ✕ goes on slowly, while the 2nd sentence ("〜 たべました") is read
+    second = () => goners.forEach((el,i) => setTimeout(() => { if (P === my && !solved) { el.classList.add('gone'); sfx.poof(); } }, 700 + i*550));
+  }
+  // show the whole picture at once (used when the story is interrupted or replayed)
+  revealNow = () => {
+    if (P !== my) return;
+    sc.querySelectorAll('.it.wait').forEach(el => { el.classList.remove('wait'); el.classList.add('pop'); el.style.animationDelay = '0ms'; });
+    const pl = sc.querySelector('.plus'); if (pl) pl.style.visibility = '';
+    sc.querySelectorAll('.it[data-go]').forEach(el => el.classList.add('gone'));
+    unlock();
+  };
+  sc.querySelectorAll('.it').forEach(el => el.addEventListener('click', () => tapItem(el)));
+  $('answers').innerHTML = Array.from({length:10}, (_,i) => `<button type="button" data-v="${i+1}">${i+1}</button>`).join('');
+  $('answers').querySelectorAll('button').forEach(b => b.addEventListener('click', () => answer(+b.dataset.v, b)));
+  let done2 = false;
+  say(storyParts(), i => { if (i === 1 && !done2 && P === my) { done2 = true; second(); } }, () => revealNow());
+}
+// sentences for the voice: digits + 個/匹/羽/枚 so the device reads さんこ・いっぴき correctly
+function storyParts() {
+  // particle は is read as "wa": write it as わ for the voice only (display keeps は)
+  return P.lines.map(l => l.replace(/<[^>]+>/g,'').replace(/(\d+)(こ|ひき|わ|まい)/g, (m,d) => d + P.cs).replace(/は(?=[\s　、])/g, 'わ'));
+}
+let revealNow = () => {};
+function unlock() {
+  const a = $('answers'); if (!a.classList.contains('locked')) return;
+  a.classList.remove('locked');
+  if ($('msg').classList.contains('listen')) { $('msg').textContent = ''; $('msg').className = 'msg'; }
+}
+function readStory() {
+  // re-reading: show the whole picture right away, then read again
+  revealNow();
+  say(storyParts());
+}
+$('sayBtn').addEventListener('click', () => { audio(); readStory(); hop($('playLion')); });
+$('playLion').addEventListener('click', e => { hop(e.currentTarget); readStory(); });
+function tapItem(el) {
+  audio();
+  if (solved) return;
+  if (el.classList.contains('wait') || $('answers').classList.contains('locked')) return;
+  if (el.classList.contains('gone') || el.querySelector('.badge')) { el.style.transform = 'scale(1.15)'; setTimeout(()=>el.style.transform='',150); return; }
+  counted++;
+  const bd = document.createElement('span'); bd.className = 'badge'; bd.textContent = counted; el.appendChild(bd);
+  el.style.transform = 'scale(1.2)'; setTimeout(()=>el.style.transform='',160);
+  sfx.count(Math.min(counted,10)); say(NUMSAY[counted] || String(counted));
+}
+function answer(v, btn) {
+  if (solved) return;
+  audio();
+  if (v === P.ans) {
+    solved = true; btn.classList.add('right'); sfx.right(); hop($('playLion'));
+    // show everything (2nd group / ✕) even if answered before the story finished
+    $('scene').querySelectorAll('.it.wait').forEach(el => el.classList.remove('wait'));
+    { const pl = $('scene').querySelector('.plus'); if (pl) pl.style.visibility = ''; }
+    $('scene').querySelectorAll('.it[data-go]').forEach(el => el.classList.add('gone'));
+    $('formula').innerHTML = `${P.a} ${P.mode === 'add' ? '＋' : '－'} ${P.b} ＝ <span class="ans">${P.ans}</span>`;
+    const praise = pick(['せいかい！','すごい！','やったね！','ばっちり！']);
+    $('msg').textContent = `${praise} ${P.ans}${P.c}！`; $('msg').className = 'msg good';
+    const me = P; let shown = false;
+    const goOn = () => {
+      if (P !== me || shown) return; shown = true;
+      if (S.prog[LV] >= PER) setTimeout(levelClear, 300);
+      else $('nextBtn').hidden = false;
+    };
+    say(`${praise} ${P.ans}${P.cs}`, null, goOn);
+    setTimeout(goOn, 5000);   // in case the device never reports the end of speech
+    confetti(40);
+    S.prog[LV] = Math.min(PER, S.prog[LV] + 1); save(); renderDots();
+
+  } else {
+    revealNow();
+    tries++; btn.classList.remove('wrong'); void btn.offsetWidth; btn.classList.add('wrong'); sfx.wrong();
+    $('msg').className = 'msg try';
+    if (tries >= 2) { $('msg').textContent = 'いっしょに かぞえて みよう！'; say('いっしょに かぞえて みよう'); autoCount(); }
+    else { $('msg').textContent = 'おしい！ もういちど かぞえてみよう'; say('おしい！ もういちど かぞえてみよう'); }
+  }
+}
+function autoCount() {
+  const els = [...$('scene').querySelectorAll('.it')].filter(el => !el.dataset.go);
+  $('scene').querySelectorAll('.badge').forEach(b => b.remove()); counted = 0;
+  els.forEach((el,i) => setTimeout(() => { if (!solved) tapItem(el); }, 900 + i*750));
+}
+$('nextBtn').addEventListener('click', () => { sfx.tap(); nextProblem(); });
+$('backBtn').addEventListener('click', () => { sfx.tap(); hush(); openHome(); });
+
+/* level clear / all clear */
+function levelClear() {
+  const total = S.prog.reduce((x,y)=>x+y,0);
+  const all = S.prog.every(p => p >= PER);
+  if (all) {
+    S.medals++; save();
+    $('overBody').innerHTML = `<div class="medal">🏅</div><h2>50もん ぜんぶ クリア！</h2><p>${who()}、すごい！<br>たしざんも ひきざんも できたね！</p>`;
+    say(`${who()}、すごい！ 50もん ぜんぶ クリア！`);
+    sfx.fanfare(); confetti(260); playSong('party');
+    $('overBtn').textContent = 'もどる';
+    $('overBtn').onclick = () => { $('over').hidden = true; S.prog = [0,0,0,0,0]; save(); playSong('calm'); openHome(); };
+  } else {
+    $('overBody').innerHTML = `<div class="stars">★</div><h2>レベル${LV+1} クリア！</h2><p>${who()}、10もん できたね！</p><p style="font-size:16px;opacity:.75">ぜんぶで ${total} / 50もん</p>`;
+    say(`レベル${LV+1} クリア！ ${who()}、10もん できたね`);
+    sfx.fanfare(); confetti(140); playSong('party');
+    $('overBtn').textContent = 'つぎへ';
+    $('overBtn').onclick = () => { $('over').hidden = true; playSong('calm'); openHome(); };
+  }
+  $('over').hidden = false;
+}
+
+/* confetti */
+const cv = $('fx'), cx = cv.getContext('2d'); let parts = [], raf = 0;
+function fit(){ cv.width = innerWidth * devicePixelRatio; cv.height = innerHeight * devicePixelRatio; }
+addEventListener('resize', fit); fit();
+function confetti(k) {
+  const cols = ['#f08a4b','#e2557d','#4a9fe0','#5bb56a','#ffd23f','#9b6bd6'];
+  for (let i=0;i<k;i++) parts.push({ x:Math.random()*cv.width, y:-20*devicePixelRatio - Math.random()*cv.height*.3, vx:(Math.random()-.5)*3, vy:2+Math.random()*4, r:(4+Math.random()*5)*devicePixelRatio, c:pick(cols), a:Math.random()*6, va:(Math.random()-.5)*.3 });
+  if (!raf) loop();
+}
+function loop() {
+  cx.clearRect(0,0,cv.width,cv.height);
+  parts.forEach(p => { p.x += p.vx*devicePixelRatio; p.y += p.vy*devicePixelRatio; p.a += p.va; cx.save(); cx.translate(p.x,p.y); cx.rotate(p.a); cx.fillStyle = p.c; cx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2); cx.restore(); });
+  parts = parts.filter(p => p.y < cv.height + 30);
+  raf = parts.length ? requestAnimationFrame(loop) : 0;
+  if (!raf) cx.clearRect(0,0,cv.width,cv.height);
+}
+
+/* start */
+if (S.name) openHome(); else openSetup();
+})();
+</script>
+</body>
+</html>
