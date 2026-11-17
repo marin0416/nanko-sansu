@@ -307,6 +307,7 @@ function audio() {
   }
   if (ac && ac.state !== 'running') { try { ac.resume(); } catch(e) {} }
   unlockIOS();
+  unlockSpeech();
   return ac;
 }
 function silentWav() {
@@ -318,6 +319,13 @@ function silentWav() {
   w(36,'data'); v.setUint32(40,n*2,true);
   let bin = ''; new Uint8Array(buf).forEach(x => bin += String.fromCharCode(x));
   return 'data:audio/wav;base64,' + btoa(bin);
+}
+// iPhone: the first speech must start inside a tap, or later speech can stay silent
+let speechUnlocked = false;
+function unlockSpeech() {
+  if (speechUnlocked || !('speechSynthesis' in window)) return;
+  speechUnlocked = true;
+  try { const u = new SpeechSynthesisUtterance(' '); u.lang = 'ja-JP'; u.volume = 0; speechSynthesis.speak(u); } catch(e) {}
 }
 function unlockIOS() {
   if (unlocked || !ac) return; unlocked = true;
@@ -446,8 +454,10 @@ function say(parts, onLine, onDone) {
   try {
     clearTimeout(speakTimer);
     // always cancel: on iPhone an utterance that has not started yet is not "speaking" but still plays later
+    const busy = speechSynthesis.speaking || speechSynthesis.pending;
     try { speechSynthesis.cancel(); } catch(e) {}
-    speakTimer = setTimeout(() => {
+    // iPhone only speaks when speak() runs right inside the tap, so speak at once when nothing is playing
+    const run = () => {
       if (my !== sayToken) return;
       const fired = new Set();
       keep = parts.map((p,i) => {
@@ -462,7 +472,8 @@ function say(parts, onLine, onDone) {
       // safety nets: if the device never reports onstart / onend, keep the game moving
       if (onLine) { let t = 0; parts.forEach((p,i) => { setTimeout(() => { if (my === sayToken && !fired.has(i)) { fired.add(i); onLine(i); } }, t + 900); t += 400 + p.length * 140; }); }
       setTimeout(done, est + 2500);
-    }, 150);
+    };
+    if (busy) speakTimer = setTimeout(run, 120); else run();
   } catch(e) { fallback(); }
 }
 function hush() { sayToken++; try { speechSynthesis.cancel(); } catch(e) {} speaking = false; setBgm(curVol()); }
