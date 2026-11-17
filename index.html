@@ -420,7 +420,17 @@ function rankVoice(v) {
   return sc;
 }
 // only use voices that run inside the phone itself (localService), so the child's name is never sent to an online voice service
-function pickVoice() { try { const vs = speechSynthesis.getVoices().filter(v => /^ja/i.test(v.lang) && v.localService); vs.sort((x,y) => rankVoice(y) - rankVoice(x)); jaVoice = vs[0] || null; } catch(e) {} }
+// iPhone (especially when opened from the home screen) often returns an empty voice list:
+// then we just ask for Japanese and the phone uses its own built-in voice.
+// Only when the device lists Japanese voices and ALL of them are online voices do we stay silent.
+let netOnly = false;
+function pickVoice() { try {
+  const ja = speechSynthesis.getVoices().filter(v => /^ja/i.test(v.lang));
+  const local = ja.filter(v => v.localService);
+  local.sort((x,y) => rankVoice(y) - rankVoice(x));
+  jaVoice = local[0] || null;
+  netOnly = ja.length > 0 && local.length === 0;
+} catch(e) {} }
 try { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; } catch(e) {}
 // say one text or a list of sentences.
 // onLine(i): sentence i starts (or by timer when voice is off). onDone(): everything has been said.
@@ -432,7 +442,7 @@ function say(parts, onLine, onDone) {
   const done = () => { if (!doneFired && my === sayToken) { doneFired = true; if (onDone) onDone(); } };
   const fallback = () => { let t = 0; parts.forEach((p,i) => { setTimeout(() => { if (my === sayToken && onLine) onLine(i); }, t); t += 400 + p.length * 140; }); setTimeout(done, Math.min(est, 1200)); };
   if (!jaVoice) pickVoice();
-  if (!S.voice || !('speechSynthesis' in window) || !jaVoice) { fallback(); return; }
+  if (!S.voice || !('speechSynthesis' in window) || netOnly) { fallback(); return; }
   try {
     clearTimeout(speakTimer);
     // always cancel: on iPhone an utterance that has not started yet is not "speaking" but still plays later
