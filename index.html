@@ -455,7 +455,8 @@ function say(parts, onLine, onDone) {
     clearTimeout(speakTimer);
     // always cancel: on iPhone an utterance that has not started yet is not "speaking" but still plays later
     const busy = speechSynthesis.speaking || speechSynthesis.pending;
-    try { speechSynthesis.cancel(); } catch(e) {}
+    // iPhone drops speech that starts right after cancel(), so only cancel when something is playing
+    if (busy) { try { speechSynthesis.cancel(); } catch(e) {} }
     // iPhone only speaks when speak() runs right inside the tap, so speak at once when nothing is playing
     const run = () => {
       if (my !== sayToken) return;
@@ -473,7 +474,7 @@ function say(parts, onLine, onDone) {
       if (onLine) { let t = 0; parts.forEach((p,i) => { setTimeout(() => { if (my === sayToken && !fired.has(i)) { fired.add(i); onLine(i); } }, t + 900); t += 400 + p.length * 140; }); }
       setTimeout(done, est + 2500);
     };
-    if (busy) speakTimer = setTimeout(run, 120); else run();
+    if (busy) speakTimer = setTimeout(run, 200); else run();
   } catch(e) { fallback(); }
 }
 function hush() { sayToken++; try { speechSynthesis.cancel(); } catch(e) {} speaking = false; setBgm(curVol()); }
@@ -589,7 +590,7 @@ function openHome() {
   show('home');
 }
 $('renameBtn').addEventListener('click', () => { sfx.tap(); openSetup(); });
-$('voiceBtn').addEventListener('click', () => { S.voice = !S.voice; save(); $('voiceBtn').textContent = S.voice ? 'こえ：あり' : 'こえ：なし'; if (!S.voice) hush(); sfx.tap(); });
+$('voiceBtn').addEventListener('click', () => { S.voice = !S.voice; save(); $('voiceBtn').textContent = S.voice ? 'こえ：あり' : 'こえ：なし'; if (!S.voice) hush(); else say('こえ、あり'); sfx.tap(); });
 $('homeLion').addEventListener('click', e => hop(e.currentTarget));
 $('musicBtn').addEventListener('click', () => { S.music = !S.music; save(); audio(); $('musicBtn').textContent = S.music ? '♪ おんがく' : '♪ なし'; playSong('calm'); setBgm(curVol()); sfx.tap(); });
 
