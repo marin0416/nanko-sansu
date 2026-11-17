@@ -120,6 +120,7 @@ h1 .o{color:var(--orange)}
 .stars{font-size:56px;color:#ffc531;text-shadow:0 3px 0 #e8a400}
 .medal{font-size:90px;animation:hop 1s infinite}
 canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:30}
+.note-mute{margin:12px 0 0;font-size:13px;text-align:center;opacity:.75;max-width:520px}
 .credit{font-size:11px;opacity:.55;margin-top:auto;padding-top:14px;text-align:center}
 </style>
 </head>
@@ -168,7 +169,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:30}
 <section class="screen" id="home" hidden>
   <div class="home-top">
     <button class="chip" id="renameBtn" type="button">なまえ</button>
-    <span style="display:flex;gap:6px"><button class="chip" id="musicBtn" type="button">♪ おんがく</button><button class="chip" id="voiceBtn" type="button">こえ：あり</button></span>
+    <span style="display:flex;gap:6px"><button class="chip" id="musicBtn" type="button" hidden>♪ おんがく</button><button class="chip" id="voiceBtn" type="button">こえ：あり</button></span>
   </div>
   <div class="home-hello">
     <svg class="bunny" id="homeLion" viewBox="0 0 120 130">  <g class="lion-tail"><path d="M82 108 C98 112 106 100 106 88" fill="none" stroke="#efb867" stroke-width="7" stroke-linecap="round"/><path d="M106 89 c-6 -3 -5 -13 1 -14 c3 5 8 3 7 10 c-1 5 -5 7 -8 4z" fill="#b8733a"/></g>
@@ -198,6 +199,7 @@ canvas#fx{position:fixed;inset:0;pointer-events:none;z-index:30}
   <div class="levels" id="levels"></div>
   <div class="total" id="total"></div>
   <div class="medals" id="medals"></div>
+  <p class="note-mute">こえが きこえないときは、iPhoneの よこの スイッチ（マナーモード）を かいじょしてね</p>
   <div class="credit">ゲームは ブラウザだけで うごきます。きろくは このスマホの なかだけに のこります。</div>
 </section>
 
@@ -293,7 +295,7 @@ const who = () => S.name + S.suf;
 
 /* ---------- sound ---------- */
 let ac = null, unlocked = false, silentEl = null, master = null, bgmGain = null;
-try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch(e) {}
+// BGM and the iPhone 'play even in silent mode' tricks are turned off: on iOS 26 they fight with the reading voice (voice starts late, BGM stops)
 function audio() {
   if (!ac) {
     try {
@@ -330,7 +332,6 @@ function unlockSpeech() {
 function unlockIOS() {
   if (unlocked || !ac) return; unlocked = true;
   try { const bb = ac.createBuffer(1,1,22050), sr = ac.createBufferSource(); sr.buffer = bb; sr.connect(ac.destination); sr.start(0); } catch(e) {}
-  try { silentEl = new Audio(silentWav()); silentEl.loop = true; silentEl.volume = .01; const p = silentEl.play(); if (p && p.catch) p.catch(() => { unlocked = false; }); } catch(e) {}
 }
 ['pointerdown','touchend','click'].forEach(ev => addEventListener(ev, () => audio(), { capture:true, passive:true }));
 document.addEventListener('visibilitychange', () => {
@@ -369,7 +370,8 @@ const SONGS = {
     chords: [[60,64,67],[60,64,67],[53,57,60],[55,59,62],[60,64,67],[53,57,60],[55,59,62],[60,64,67]] },
 };
 let song = null, songName = '', step = 0, nextTime = 0, seqTimer = null, noiseBuf = null, speaking = false;
-function playSong(name) {
+function playSong(name) { return; // BGM off
+
   if (songName === name && song) return;
   songName = name; song = SONGS[name]; step = 0;
   const a = audio(); if (!a) return;
@@ -463,7 +465,7 @@ function say(parts, onLine, onDone) {
       const fired = new Set();
       keep = parts.map((p,i) => {
         const u = new SpeechSynthesisUtterance(p);
-        u.lang = 'ja-JP'; u.rate = .92; u.pitch = 1.1; u.volume = 1; if (jaVoice) u.voice = jaVoice;
+        u.lang = 'ja-JP'; u.rate = 1.05; u.pitch = 1.1; u.volume = 1; if (jaVoice) u.voice = jaVoice;
         u.onstart = () => { if (my !== sayToken) { try { speechSynthesis.cancel(); } catch(e) {} return; } speaking = true; setBgm(curVol()); if (onLine && !fired.has(i)) { fired.add(i); onLine(i); } };
         u.onend = u.onerror = () => { if (i === parts.length-1 && my === sayToken) { speaking = false; setBgm(curVol()); done(); } };
         return u;
